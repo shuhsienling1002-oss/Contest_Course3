@@ -20,20 +20,45 @@ CAT_FILE = "gym_categories.csv"
 COACH_EVT_FILE = "gym_coach_events.csv"
 COACH_PASSWORD = "1234"
 
-# [修改 1] 標題設定變更
+# [修改 1] 標題設定：憶珊教練
 st.set_page_config(page_title="憶珊教練排課表", layout="wide", initial_sidebar_state="collapsed")
 
-# [修改 2] 版面風格優化 (女性化/柔美風格)
+# [修改 2] 版面風格 + iOS 白底白字修復 (針對粉色主題優化)
 st.markdown("""
     <style>
-    /* 全域背景：淡粉色系 */
-    .stApp {
-        background-color: #FFF5F7;
-        background-image: linear-gradient(to bottom, #FFF5F7, #FFF0F5);
+    /* ========== iOS 深色模式強制修復區 (Force Light Theme) ========== */
+    
+    /* 1. 強制背景為柔和粉色，無視手機系統深色設定 */
+    .stApp, .stApp > header, .stApp > footer {
+        background-color: #FFF5F7 !important; 
+        background-image: linear-gradient(to bottom, #FFF5F7, #FFF0F5) !important;
+        color: #333333 !important;
     }
     
-    /* 標題字體：柔和的深玫紅色 */
-    h1, h2, h3 {
+    /* 2. 強制所有輸入框、選單為白底黑字 */
+    input, textarea, select, div[data-baseweb="select"] > div {
+        background-color: #ffffff !important;
+        color: #333333 !important;
+        border-color: #F8BBD0 !important; /* 粉色邊框 */
+    }
+    
+    /* 3. 強制標籤與文字顏色 */
+    label, .stMarkdown p, .stMarkdown li, span {
+        color: #555555 !important;
+    }
+    
+    /* 4. 修復下拉選單彈出視窗 */
+    div[data-baseweb="popover"] > div {
+        background-color: #ffffff !important;
+    }
+    div[data-baseweb="menu"] li {
+        color: #333333 !important;
+    }
+    
+    /* ========== 憶珊教練專屬風格 (柔美風) ========== */
+    
+    /* 標題字體：深玫紅色 */
+    h1, h2, h3, h4 {
         font-family: "Microsoft JhengHei", "Segoe UI", sans-serif;
         font-weight: 600 !important;
         color: #880E4F !important;
@@ -42,30 +67,27 @@ st.markdown("""
     /* 按鈕樣式：圓潤、粉色邊框 */
     .stButton>button {
         border-radius: 25px;
-        background-color: white;
-        border: 2px solid #F48FB1;
-        color: #880E4F;
+        background-color: white !important;
+        border: 2px solid #F48FB1 !important;
+        color: #880E4F !important;
         font-weight: bold;
         transition: all 0.3s;
     }
     .stButton>button:hover {
-        background-color: #FCE4EC;
-        border-color: #EC407A;
+        background-color: #FCE4EC !important;
+        border-color: #EC407A !important;
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(236, 64, 122, 0.2);
     }
     
     /* 主要按鈕 (Primary) */
     .stButton>button[kind="primary"] {
-        background-color: #F06292;
-        border: none;
-        color: white;
+        background-color: #F06292 !important;
+        border: none !important;
+        color: white !important;
     }
-    .stButton>button[kind="primary"]:hover {
-        background-color: #E91E63;
-    }
-
-    /* 學員課程卡片樣式：柔和陰影、圓角 */
+    
+    /* 學員課程卡片樣式 */
     .lesson-card {
         background-color: rgba(255, 255, 255, 0.95);
         padding: 15px;
@@ -80,10 +102,12 @@ st.markdown("""
         transform: scale(1.02);
         box-shadow: 0 6px 18px rgba(233, 30, 99, 0.15);
     }
+    
+    /* 卡片內文字強制深色 */
     .time-badge {
         font-size: 1.1em;
         font-weight: bold;
-        color: #555;
+        color: #555 !important;
         background-color: #FCE4EC;
         padding: 2px 8px;
         border-radius: 12px;
@@ -91,7 +115,7 @@ st.markdown("""
     .student-name {
         font-size: 1.2em;
         font-weight: bold;
-        color: #333;
+        color: #333 !important;
         margin-left: 8px;
     }
     .cat-tag {
@@ -100,15 +124,8 @@ st.markdown("""
         font-size: 0.85em;
         padding: 3px 10px;
         border-radius: 12px;
-        color: white;
+        color: white !important;
         opacity: 0.9;
-    }
-    
-    /* 輸入框與選單優化 */
-    div[data-baseweb="select"] > div, div[data-baseweb="input"] > div {
-        border-radius: 12px;
-        background-color: #ffffff;
-        border-color: #F8BBD0;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -187,7 +204,7 @@ df_db, df_stu, df_req, df_cat, df_evt = load_and_fix_data()
 
 student_list = df_stu["姓名"].tolist() if not df_stu.empty else []
 
-# --- 關鍵修復：建立絕對安全的下拉選單 ---
+# --- 關鍵修復：建立絕對安全的下拉選單 (保持不變) ---
 base_cats = df_cat["類別名稱"].tolist()
 db_cats = df_db["課程種類"].unique().tolist()
 stu_cats = df_stu["課程類別"].unique().tolist()
@@ -310,7 +327,7 @@ calendar_options = {
         "listMonth": { "listDayFormat": { "month": "numeric", "day": "numeric", "weekday": "short" } }
     }
 }
-calendar(events=events, options=calendar_options, key="cal_v34_style_fem")
+calendar(events=events, options=calendar_options, key="cal_v34_style_fem_fix")
 st.divider()
 
 # ==================== 3. 身份導覽 ====================
