@@ -20,50 +20,65 @@ CAT_FILE = "gym_categories.csv"
 COACH_EVT_FILE = "gym_coach_events.csv"
 COACH_PASSWORD = "1234"
 
-# [修改 1] 標題設定：憶珊教練
+# [標題設定]
 st.set_page_config(page_title="憶珊教練排課表", layout="wide", initial_sidebar_state="collapsed")
 
-# [修改 2] 版面風格 + iOS 白底白字修復 (針對粉色主題優化)
+# [版面風格 - 憶珊教練 iOS 終極修復版]
 st.markdown("""
     <style>
-    /* ========== iOS 深色模式強制修復區 (Force Light Theme) ========== */
-    
-    /* 1. 強制背景為柔和粉色，無視手機系統深色設定 */
-    .stApp, .stApp > header, .stApp > footer {
-        background-color: #FFF5F7 !important; 
+    /* ================================================================= */
+    /* 🛑 iOS 深色模式終極對抗區 (Nuclear Fix for Dark Mode) 🛑 */
+    /* ================================================================= */
+
+    /* 1. 強制全域背景為柔粉色，文字為深黑 (優先權極高) */
+    .stApp {
+        background-color: #FFF5F7 !important;
         background-image: linear-gradient(to bottom, #FFF5F7, #FFF0F5) !important;
         color: #333333 !important;
     }
-    
-    /* 2. 強制所有輸入框、選單為白底黑字 */
-    input, textarea, select, div[data-baseweb="select"] > div {
-        background-color: #ffffff !important;
+
+    /* 2. 【關鍵修復】強制所有段落、標籤、div變黑 */
+    .stApp p, .stApp label, .stApp span, .stApp div {
         color: #333333 !important;
+    }
+
+    /* 3. 【關鍵修復】特別針對 Radio Button (單選按鈕) */
+    div[role="radiogroup"] label div[data-testid="stMarkdownContainer"] p {
+        color: #333333 !important;
+        font-weight: 600;
+    }
+
+    /* 4. 輸入框與下拉選單修復 */
+    input, textarea, select {
+        color: #333333 !important;
+        background-color: #ffffff !important;
+        -webkit-text-fill-color: #333333 !important; /* Safari 專用 */
         border-color: #F8BBD0 !important; /* 粉色邊框 */
     }
-    
-    /* 3. 強制標籤與文字顏色 */
-    label, .stMarkdown p, .stMarkdown li, span {
-        color: #555555 !important;
-    }
-    
-    /* 4. 修復下拉選單彈出視窗 */
-    div[data-baseweb="popover"] > div {
+    /* 下拉選單選中值 */
+    div[data-baseweb="select"] > div {
+        color: #333333 !important;
         background-color: #ffffff !important;
+        border-color: #F8BBD0 !important;
     }
-    div[data-baseweb="menu"] li {
+    
+    /* 5. 日曆與表格文字修復 */
+    div[data-testid="stDataFrame"] {
         color: #333333 !important;
     }
-    
-    /* ========== 憶珊教練專屬風格 (柔美風) ========== */
-    
-    /* 標題字體：深玫紅色 */
+
+    /* ================================================================= */
+    /* 🌸 憶珊教練專屬風格 (柔美風) */
+    /* ================================================================= */
+
+    /* 標題樣式 - 深玫紅 */
     h1, h2, h3, h4 {
-        font-family: "Microsoft JhengHei", "Segoe UI", sans-serif;
+        text-align: center;
+        font-family: "Microsoft JhengHei", sans-serif;
+        color: #880E4F !important; /* 強制覆蓋上面的黑色 */
         font-weight: 600 !important;
-        color: #880E4F !important;
     }
-    
+
     /* 按鈕樣式：圓潤、粉色邊框 */
     .stButton>button {
         border-radius: 25px;
@@ -77,17 +92,22 @@ st.markdown("""
         background-color: #FCE4EC !important;
         border-color: #EC407A !important;
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(236, 64, 122, 0.2);
     }
     
-    /* 主要按鈕 (Primary) */
+    /* Primary 按鈕 (深粉紅) */
     .stButton>button[kind="primary"] {
         background-color: #F06292 !important;
         border: none !important;
-        color: white !important;
     }
-    
-    /* 學員課程卡片樣式 */
+    /* Primary 按鈕文字必須是白的 */
+    .stButton>button[kind="primary"] p {
+        color: #ffffff !important;
+    }
+    .stButton>button[kind="primary"] * {
+        color: #ffffff !important;
+    }
+
+    /* 卡片樣式 */
     .lesson-card {
         background-color: rgba(255, 255, 255, 0.95);
         padding: 15px;
@@ -96,11 +116,6 @@ st.markdown("""
         border-left-width: 6px;
         border-left-style: solid;
         margin-bottom: 15px;
-        transition: transform 0.2s;
-    }
-    .lesson-card:hover {
-        transform: scale(1.02);
-        box-shadow: 0 6px 18px rgba(233, 30, 99, 0.15);
     }
     
     /* 卡片內文字強制深色 */
@@ -118,6 +133,7 @@ st.markdown("""
         color: #333 !important;
         margin-left: 8px;
     }
+    /* 標籤文字白 */
     .cat-tag {
         display: inline-block;
         margin-top: 8px;
@@ -149,7 +165,6 @@ for f, cols in SCHEMA.items():
 
 # --- 資料讀取與自動修復 (保持不變) ---
 def load_and_fix_data():
-    # 1. 讀取課程
     try:
         df_d = pd.read_csv(DB_FILE)
         if "課程種類" in df_d.columns:
@@ -159,7 +174,6 @@ def load_and_fix_data():
         df_d["日期"] = pd.to_datetime(df_d["日期"], errors='coerce').dt.date
     except: df_d = pd.DataFrame(columns=SCHEMA[DB_FILE])
 
-    # 2. 讀取學員
     try:
         df_s = pd.read_csv(STU_FILE)
         if "剩餘堂數" in df_s.columns and "購買堂數" not in df_s.columns:
@@ -175,14 +189,12 @@ def load_and_fix_data():
         df_s = df_s[SCHEMA[STU_FILE]]
     except: df_s = pd.DataFrame(columns=SCHEMA[STU_FILE])
 
-    # 3. 讀取留言
     try:
         df_r = pd.read_csv(REQ_FILE)
         for c in SCHEMA[REQ_FILE]: 
             if c not in df_r.columns: df_r[c] = ""
     except: df_r = pd.DataFrame(columns=SCHEMA[REQ_FILE])
 
-    # 4. 讀取類別
     try:
         df_c = pd.read_csv(CAT_FILE)
         if df_c.empty or "類別名稱" not in df_c.columns:
@@ -190,7 +202,6 @@ def load_and_fix_data():
         df_c["類別名稱"] = df_c["類別名稱"].astype(str)
     except: df_c = pd.DataFrame({"類別名稱": ["MA 體態", "S 專項"]})
 
-    # 5. 行事曆
     try:
         df_e = pd.read_csv(COACH_EVT_FILE)
         for c in SCHEMA[COACH_EVT_FILE]:
@@ -204,7 +215,7 @@ df_db, df_stu, df_req, df_cat, df_evt = load_and_fix_data()
 
 student_list = df_stu["姓名"].tolist() if not df_stu.empty else []
 
-# --- 關鍵修復：建立絕對安全的下拉選單 (保持不變) ---
+# --- 下拉選單處理 (保持不變) ---
 base_cats = df_cat["類別名稱"].tolist()
 db_cats = df_db["課程種類"].unique().tolist()
 stu_cats = df_stu["課程類別"].unique().tolist()
@@ -217,17 +228,14 @@ if not ALL_CATEGORIES:
     ALL_CATEGORIES = ["(請設定)"]
 
 # ==================== 2. 全域大日曆 ====================
-# [修改 3] 標題加上花朵符號，並置中
-st.markdown("<h1 style='text-align: center; margin-bottom: 20px; color: #880E4F;'>🌸 憶珊教練排課表 🌸</h1>", unsafe_allow_html=True)
+st.markdown("<h1>🌸 憶珊教練排課表 🌸</h1>", unsafe_allow_html=True)
 
 def get_category_color(cat_name):
     cat_str = str(cat_name)
-    # [修改 4] 調整顏色代碼，使其更柔和 (MA 改為玫紅, S 改為柔藍)
     if "MA" in cat_str: return "#EC407A" # Pink/Rose
     if "S" in cat_str: return "#42A5F5"  # Soft Blue
     if "一般" in cat_str: return "#66BB6A" # Soft Green
     
-    # 柔和色系調色盤
     palette = ["#AB47BC", "#FF7043", "#26A69A", "#5C6BC0", "#8D6E63", "#78909C", "#FFA726"]
     hash_val = int(hashlib.sha256(cat_str.encode('utf-8')).hexdigest(), 16)
     return palette[hash_val % len(palette)]
@@ -263,9 +271,9 @@ for _, row in df_evt.iterrows():
     if pd.isna(row['日期']): continue
     
     if row['類型'] == "排休":
-        evt_color = "#9E9E9E" # Softer grey
+        evt_color = "#9E9E9E" 
     else:
-        evt_color = "#FF7043" # Soft Orange
+        evt_color = "#FF7043" 
     
     is_all_day = (str(row['時間']) == "全天")
     
@@ -327,7 +335,7 @@ calendar_options = {
         "listMonth": { "listDayFormat": { "month": "numeric", "day": "numeric", "weekday": "short" } }
     }
 }
-calendar(events=events, options=calendar_options, key="cal_v34_style_fem_fix")
+calendar(events=events, options=calendar_options, key="cal_v35_fem_nuclear_fix")
 st.divider()
 
 # ==================== 3. 身份導覽 ====================
@@ -340,6 +348,7 @@ if mode == "🔍 學員查詢":
     if not day_view.empty:
         for _, row in day_view.iterrows():
             c_code = get_category_color(row['課程種類'])
+            # 使用 CSS class 確保樣式正確
             st.markdown(f"""
             <div class="lesson-card" style="border-left-color: {c_code};">
                 <span class="time-badge">🕒 {row['時間']}</span>
