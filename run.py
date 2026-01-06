@@ -6,7 +6,7 @@ import zipfile
 import io      
 from datetime import datetime, date, time
 
-# --- 0. [系統級強制設定] 寫入設定檔 (鎖定亮色主題 + 粉色系) ---
+# --- 0. [系統級設定] ---
 config_dir = ".streamlit"
 if not os.path.exists(config_dir):
     os.makedirs(config_dir)
@@ -36,32 +36,26 @@ COACH_PASSWORD = "1234"
 
 st.set_page_config(page_title="憶珊教練排課表", layout="wide", initial_sidebar_state="collapsed")
 
-# --- 2. [CSS 修復區 - 憶珊教練專用] ---
+# --- 2. [CSS 修復區] ---
 st.markdown("""
     <style>
-    /* 1. 強制主視窗背景為柔粉色 */
+    /* 1. 強制主視窗與文字 */
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
         background-color: #FFF5F7 !important;
         background-image: linear-gradient(to bottom, #FFF5F7, #FFF0F5) !important;
     }
-    /* 全域文字深灰 */
     h1, h2, h3, p, div, span, label, li {
         color: #333333 !important;
     }
     
-    /* 2. 按鈕 (粉色風格) */
+    /* 2. 按鈕樣式 (維持粉色) */
     .stButton > button {
         background-color: #ffffff !important;
-        color: #880E4F !important; /* 深玫紅 */
-        border: 2px solid #F48FB1 !important; /* 粉色框 */
+        color: #880E4F !important;
+        border: 2px solid #F48FB1 !important;
         font-weight: bold !important;
         border-radius: 20px !important;
     }
-    .stButton > button:hover {
-        background-color: #FCE4EC !important;
-        border-color: #EC407A !important;
-    }
-    /* Primary 按鈕 */
     .stButton > button[kind="primary"] {
         background-color: #EC407A !important;
         color: #ffffff !important;
@@ -78,29 +72,26 @@ st.markdown("""
         font-size: 1.1rem !important;
     }
 
-    /* 4. [重點修復] 表格右上角工具列 (針對您的截圖) */
-    /* 強制白底，粉色邊框，深色圖示 */
+    /* 4. [修復重點] 表格右上角工具列 */
+    /* 使用 color-scheme 強制瀏覽器使用亮色渲染，解決頑固黑底 */
     [data-testid="stElementToolbar"] {
+        color-scheme: light !important; 
         background-color: #ffffff !important;
         border: 1px solid #F48FB1 !important;
         border-radius: 6px !important;
         opacity: 1 !important;
     }
-    /* 圖示強制變黑 */
+    /* 強制內部所有按鈕與圖示變深灰 */
     [data-testid="stElementToolbar"] button {
         color: #333333 !important;
         fill: #333333 !important;
     }
     [data-testid="stElementToolbar"] svg {
-        fill: #333333 !important;
         color: #333333 !important;
-    }
-    /* 滑鼠懸停 */
-    [data-testid="stElementToolbar"] button:hover {
-        background-color: #FCE4EC !important;
+        fill: #333333 !important;
     }
     
-    /* 5. 表格內容 (粉色框) */
+    /* 5. 表格內容 */
     [data-testid="stDataFrame"] {
         background-color: white !important;
         border: 1px solid #F8BBD0 !important;
@@ -110,19 +101,13 @@ st.markdown("""
     .fc {
         background-color: #ffffff !important;
         color: #333333 !important;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    .fc-theme-standard th {
-        background-color: #Fce4ec !important;
-        border-color: #F8BBD0 !important;
     }
     .fc-col-header-cell-cushion, .fc-daygrid-day-number {
         color: #880E4F !important;
         text-decoration: none !important;
     }
     
-    /* 7. 輸入框與選單 (白底粉框) */
+    /* 7. 輸入框與選單 */
     input, textarea, select {
         color: #333333 !important;
         background-color: #ffffff !important;
@@ -131,7 +116,6 @@ st.markdown("""
     div[data-baseweb="select"] > div {
         background-color: #ffffff !important;
         color: #333333 !important;
-        border-color: #F48FB1 !important;
     }
     
     /* 8. 標題與卡片 */
@@ -273,7 +257,7 @@ holidays = [
 for h in holidays:
     events.append({"title": h["title"], "start": h["start"], "end": h.get("end"), "allDay": True, "backgroundColor": "#EF5350", "borderColor": "#EF5350", "textColor": "#FFFFFF", "display": "block"})
 
-calendar(events=events, options={"initialView": "dayGridMonth", "headerToolbar": {"left": "prev,next", "center": "title", "right": "dayGridMonth,listMonth"}}, key="cal_fix_fem_final")
+calendar(events=events, options={"initialView": "dayGridMonth", "headerToolbar": {"left": "prev,next", "center": "title", "right": "dayGridMonth,listMonth"}}, key="cal_fix_fem_v3")
 st.divider()
 
 mode = st.radio("", ["🔍 學員查詢", "🔧 教練後台"], horizontal=True)
